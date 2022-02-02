@@ -19,23 +19,11 @@ Docker Composed:
 ```yml
 version: "3.9"
 volumes:
-  OfvpServerData:
-  MongoOFVp:
+  HttpInjectorData:
 networks:
   ofvp_network:
-    driver: bridge
+    enable_ipv6: true
 services:
-  ofvp_mongodb:
-    container_name: ofvp_mongodb
-    restart: on-failure
-    image: mongo
-    volumes:
-      - MongoOFVp:/data/db
-    networks:
-      - "ofvp_network"
-    environment:
-      - PUID=1000
-      - PGID=1000
   ofvp_server:
     container_name: ofvp_server
     restart: on-failure
@@ -45,16 +33,23 @@ services:
       - ofvp_mongodb
     networks:
       - "ofvp_network"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv4.ip_forward=1
+    environment:
+      MongoDB_URL: "<MongoDB String>"
     ports:
       - 3000:3000/tcp
       - 80:80/tcp
       - 51820:51820/udp
-      - 2222:22/tcp
+      - 22:22/tcp
       - 2200:22/tcp
       - 7300:7300/tcp
       - 10086:10086/udp
       - 10086:10086/tcp
     volumes:
       - /lib/modules/:/lib/modules/
-      - OfvpServerData:/root/OFVpServer
+      - HttpInjectorData:/root/OFVpServer
 ```
